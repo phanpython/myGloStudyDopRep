@@ -31,15 +31,18 @@ const appData = {
     }
 
     for (let i = 0; i < 2; i++) {
-      let name;
+      let question;
+      let uniqueName;
       let price = 0;
 
-      name = checkText(name, "Какой дополнительный тип услуги нужен?");
+      question = checkText(question, "Какой дополнительный тип услуги нужен?");
+
+      uniqueName = `${question}_${i}`;
 
       do {
         price = prompt("Сколько это будет стоить?");
       } while (!isNumber(price));
-      appData.services[name] = +price;
+      appData.services[uniqueName] = +price;
     }
 
     appData.adaptive = confirm("Нужен ли адаптив на сайте?");
@@ -101,6 +104,7 @@ const appData = {
     //   console.log(key + ": " + this[key]);
     // }
     console.log(appData.screens);
+    console.log(appData.services);
     console.log(appData.fullPrice);
     console.log(appData.servicePercentPrice);
   },
