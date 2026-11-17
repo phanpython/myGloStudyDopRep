@@ -5,10 +5,9 @@ const appData = {
   fullPrice: 0,
   servicePercentPrice: 0,
   allServicePrices: 0,
-  service1: "",
-  service2: "",
+  services: {},
   title: "",
-  screens: "",
+  screens: [],
   adaptive: true,
   screenPrice: 0,
 
@@ -18,47 +17,49 @@ const appData = {
       "Как называется ваш проект?",
       "Калькулятор вёрстки",
     );
-    appData.screens = checkText(
-      appData.screens,
-      "Какие типы экранов нужно разработать?",
-      "Простые, сложные",
-    );
-
-    do {
-      appData.screenPrice = +prompt("Сколько будет стоить данная работа?");
-    } while (!isNumber(appData.screenPrice));
-    appData.adaptive = confirm("Нужен ли адаптив на сайте?");
-  },
-
-  getAllServicePrices: function () {
-    let sum = 0;
-    let price = 0;
 
     for (let i = 0; i < 2; i++) {
-      if (i === 0) {
-        appData.service1 = checkText(
-          appData.service1,
-          "Какой дополнительный тип услуги нужен?",
-          "Анимированные кнопки",
-        );
-      } else if (i === 1) {
-        appData.service2 = checkText(
-          appData.service2,
-          "Какой дополнительный тип услуги нужен?",
-          "Руководство пользователя",
-        );
-      }
+      let name;
+      let price = 0;
+
+      name = checkText(name, "Какие типы экранов нужно разработать?");
+
+      do {
+        price = +prompt("Сколько будет стоить данная работа?");
+      } while (!isNumber(price));
+      appData.screens.push({ id: i, name: name, price: price });
+    }
+
+    for (let i = 0; i < 2; i++) {
+      let name;
+      let price = 0;
+
+      name = checkText(name, "Какой дополнительный тип услуги нужен?");
 
       do {
         price = prompt("Сколько это будет стоить?");
       } while (!isNumber(price));
-      sum += +price;
+      appData.services[name] = +price;
     }
-    return sum;
+
+    appData.adaptive = confirm("Нужен ли адаптив на сайте?");
+  },
+
+  addPrices: function () {
+    appData.screenPrice = appData.screens.reduce(function (
+      accumulator,
+      currentValue,
+    ) {
+      return accumulator + currentValue.price;
+    }, 0);
+
+    for (let key in appData.services) {
+      appData.allServicePrices += appData.services[key];
+    }
   },
 
   getServicePercentPrices: function () {
-    return Math.ceil(
+    appData.servicePercentPrice = Math.ceil(
       appData.fullPrice - appData.fullPrice * (appData.rollback / 100),
     );
   },
@@ -77,29 +78,31 @@ const appData = {
   },
 
   getFullPrice: function () {
-    return appData.screenPrice + appData.allServicePrices;
+    appData.fullPrice = appData.screenPrice + appData.allServicePrices;
   },
 
   getTitle: function () {
     appData.title = appData.title.trimStart();
-    return (
-      appData.title[0].toUpperCase() + appData.title.slice(1).toLowerCase()
-    );
+    appData.title =
+      appData.title[0].toUpperCase() + appData.title.slice(1).toLowerCase();
   },
 
   start: function () {
     appData.asking();
-    appData.allServicePrices = appData.getAllServicePrices();
-    appData.fullPrice = appData.getFullPrice();
-    appData.title = appData.getTitle();
-    appData.servicePercentPrice = appData.getServicePercentPrices();
+    appData.addPrices();
+    appData.getFullPrice();
+    appData.getTitle();
+    appData.getServicePercentPrices();
     this.logger();
   },
 
   logger: function () {
-    for (let key in this) {
-      console.log(key + ": " + this[key]);
-    }
+    // for (let key in this) {
+    //   console.log(key + ": " + this[key]);
+    // }
+    console.log(appData.screens);
+    console.log(appData.fullPrice);
+    console.log(appData.servicePercentPrice);
   },
 };
 
@@ -107,10 +110,18 @@ const isNumber = function (num) {
   return !isNaN(parseFloat(num)) && isFinite(num) && num != 0;
 };
 
+// const isString = function (text) {
+//   return typeof text === "string" || text instanceof String;
+// };
+
 const checkText = function (nameText, text, suggestText) {
   do {
     nameText = prompt(text, suggestText);
-  } while (nameText == "" || typeof nameText == "object");
+  } while (
+    nameText == "" ||
+    typeof nameText !== "string" ||
+    isNumber(nameText)
+  );
   return nameText;
 };
 
